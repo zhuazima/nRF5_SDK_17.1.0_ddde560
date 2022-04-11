@@ -73,6 +73,8 @@
 #define CONNECTED_LED                   BSP_BOARD_LED_1                         /**< Is on when device has connected. */
 #define LEDBUTTON_LED                   BSP_BOARD_LED_2                         /**< LED to be toggled with the help of the LED Button Service. */
 #define LEDBUTTON_BUTTON                BSP_BUTTON_0                            /**< Button that will trigger the notification event with the LED Button Service */
+#define TESTKEY_BUTTON                  BSP_BUTTON_1                            /**< Button that will trigger the notification event with the LED Button Service */
+
 
 // #define DEVICE_NAME                     "Nordic_Blinky"                         /**< Name of device. Will be included in the advertising data. */
 #define DEVICE_NAME                         "WKP_BUTTON" 
@@ -480,6 +482,36 @@ static void ble_stack_init(void)
     NRF_SDH_BLE_OBSERVER(m_ble_observer, APP_BLE_OBSERVER_PRIO, ble_evt_handler, NULL);
 }
 
+/*
+ *  定义一个新的函数。设备给手机发送键值（一个固定的值）
+ * 
+ */
+uint32_t ble_button2_send(uint16_t conn_handle, ble_lbs_t * p_lbs, uint8_t val)
+
+{
+
+    ble_gatts_hvx_params_t params;
+
+    uint16_t len = sizeof(val);
+
+ 
+
+    memset(&params, 0, sizeof(params));
+
+    params.type   = BLE_GATT_HVX_NOTIFICATION;
+
+    params.handle = p_lbs->button_char_handles.value_handle;  //Button characteristic value handle
+
+    params.p_data = &val;
+
+    params.p_len  = &len;
+
+ 
+
+    return sd_ble_gatts_hvx(conn_handle, &params);      
+
+}
+
 
 /**@brief Function for handling events from the button handler module.
  *
@@ -504,6 +536,12 @@ static void button_event_handler(uint8_t pin_no, uint8_t button_action)
             }
             break;
 
+        case TESTKEY_BUTTON:
+
+            NRF_LOG_INFO("Button2 pressed.");
+            ble_button2_send(m_conn_handle, &m_lbs, 5);
+            break;
+
         default:
             APP_ERROR_HANDLER(pin_no);
             break;
@@ -520,7 +558,8 @@ static void buttons_init(void)
     //The array must be static because a pointer to it will be saved in the button handler module.
     static app_button_cfg_t buttons[] =
     {
-        {LEDBUTTON_BUTTON, false, BUTTON_PULL, button_event_handler}
+        {LEDBUTTON_BUTTON, false, BUTTON_PULL, button_event_handler},
+        {TESTKEY_BUTTON, false, BUTTON_PULL, button_event_handler}
     };
 
     err_code = app_button_init(buttons, ARRAY_SIZE(buttons),
