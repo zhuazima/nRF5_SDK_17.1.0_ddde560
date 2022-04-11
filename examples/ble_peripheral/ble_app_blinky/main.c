@@ -276,6 +276,8 @@ static void led_write_handler(uint16_t conn_handle, ble_lbs_t * p_lbs, uint8_t l
     {
         bsp_board_led_on(LEDBUTTON_LED);
         NRF_LOG_INFO("Received LED ON!");
+
+        bsp_board_led_invert(BSP_BOARD_LED_3);      //led3 toogle
     }
     else
     {
