@@ -719,7 +719,9 @@ int main(void)
     // Enter main loop.
     for (;;)
     {
+        NRF_LOG_PROCESS();
         idle_state_handle();
+         
     }
 }
 
